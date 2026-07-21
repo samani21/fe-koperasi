@@ -1,29 +1,49 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { Landmark, ArrowRight, ShieldCheck } from 'lucide-react';
-
+import Cookies from 'js-cookie';
+import { getToken } from '@/utils/Cookies';
+import { useRouter } from 'next/navigation';
 export default function WelcomePage() {
+    const router = useRouter()
+    const token = getToken();
+
+    useEffect(() => {
+        // Cek Sesi
+        const userCookie = Cookies.get('user');
+        const roleCookie = Cookies.get('role');
+
+        if (token && userCookie) {
+            try {
+                const parsedUser = JSON.parse(userCookie);
+                const role = (parsedUser.role || roleCookie || '').toLowerCase();
+
+                let targetUrl = '/member';
+                if (role === 'superadmin' || role === 'admin') {
+                    targetUrl = '/superadmin';
+                } else if (role === 'frontoffice' || role === 'fo') {
+                    targetUrl = '/fo';
+                }
+
+                router.push(targetUrl);
+                return;
+            } catch (error) {
+                console.error("Gagal membaca data pengguna", error);
+            }
+        }
+    }, [token, router]);
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans text-slate-800 relative overflow-hidden">
 
-            {/* Efek Latar Belakang (Blurry Ornaments) */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Main Card */}
             <div className="max-w-md w-full bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-2xl rounded-[2rem] p-8 md:p-12 text-center relative z-10 animate-in fade-in zoom-in-95 duration-500">
 
-                {/* Efek Gradient di atas kartu */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-b from-green-500/15 to-transparent pointer-events-none" />
-
-                {/* Ikon Koperasi */}
                 <div className="relative mx-auto w-20 h-20 bg-gradient-to-tr from-green-600 to-green-700 text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-lg shadow-green-600/30 transform rotate-3 hover:rotate-0 transition-transform duration-300">
                     <Landmark size={36} strokeWidth={2} />
                 </div>
 
-                {/* Teks Sambutan */}
                 <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-3 tracking-tight leading-tight">
                     Selamat Datang di <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-800">
@@ -35,13 +55,11 @@ export default function WelcomePage() {
                     Sistem informasi terpadu untuk pengelolaan simpan pinjam dan pembiayaan berbasis syariah yang aman, transparan, dan terpercaya.
                 </p>
 
-                {/* Badge Kepercayaan */}
                 <div className="flex items-center justify-center gap-2 mb-8 text-xs font-semibold text-green-700 bg-green-50 py-2.5 px-4 rounded-full border border-green-100 w-max mx-auto shadow-sm">
                     <ShieldCheck size={16} />
                     <span>Amanah & Terintegrasi</span>
                 </div>
 
-                {/* Tombol Menuju Login */}
                 <div className="flex flex-col gap-3">
                     <Link
                         href="/login"

@@ -51,14 +51,14 @@ export default function SidebarComponent({ isSidebarOpen, setIsSidebarOpen, setL
                         </p>
                     </div>
                 </div>
-
-                {/* Navigasi Menu */}
                 <nav className="w-full flex-1 overflow-hidden flex flex-col px-4">
                     <div className='h-full overflow-y-auto no-scrollbar pb-6 space-y-1.5'>
-                        {menuSidebar.filter((menu) => menu.role.includes(currentRole))
+                        {/* Langsung filter dan render begitu currentRole tersedia, tanpa animasi */}
+                        {menuSidebar
+                            .filter((menu) => menu.role.includes(currentRole))
                             .map((menu, i) => {
-                                const isOpen = menu.href === '/'
-                                    ? pathname === '/'
+                                const isOpen = menu.href === '/' + currentRole
+                                    ? pathname === '/' + currentRole
                                     : pathname.startsWith(menu.href);
 
                                 return (
@@ -69,7 +69,6 @@ export default function SidebarComponent({ isSidebarOpen, setIsSidebarOpen, setL
                                         active={isOpen}
                                         parent={menu.href}
                                         setLoading={setLoading}
-                                        isLocked={false}
                                         children={menu.child}
                                         pathNameChild={menu.child ? pathname : undefined}
                                     />

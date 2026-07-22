@@ -2,7 +2,7 @@
 
 import React, { ElementType, Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, Lock } from 'lucide-react';
+import { ChevronDown } from 'lucide-react'; // Icon Lock dihapus karena sudah tidak dipakai
 
 // ==========================================
 // TYPES & INTERFACES
@@ -20,7 +20,6 @@ interface NavItemProps {
     parent: string;
     pathNameChild?: string;
     setLoading: Dispatch<SetStateAction<boolean>>;
-    isLocked?: boolean;
 }
 
 // ==========================================
@@ -34,27 +33,19 @@ export default function NavItem({
     parent,
     pathNameChild,
     setLoading,
-    isLocked = false
 }: NavItemProps) {
     const route = useRouter();
 
-    const [isOpen, setIsOpen] = useState<boolean>(false);
+    // Inisialisasi state langsung dari props 'active' untuk mencegah UI berkedut saat refresh
+    const [isOpen, setIsOpen] = useState<boolean>(active);
     const hasChildren = Boolean(children && children.length > 0);
 
+    // Pantau perubahan dari luar, buka/tutup otomatis jika status aktif berubah
     useEffect(() => {
-        if (isLocked) {
-            setIsOpen(false);
-        } else {
-            setIsOpen(active);
-        }
-    }, [active, isLocked]);
+        setIsOpen(active);
+    }, [active]);
 
     const handleClick = (e: React.MouseEvent) => {
-        if (isLocked) {
-            e.preventDefault();
-            return;
-        }
-
         if (hasChildren) {
             setIsOpen(!isOpen);
         } else {
@@ -65,8 +56,6 @@ export default function NavItem({
 
     // Helper untuk memastikan URL gabungan aman dari "double slash" (//)
     const resolvePath = (childHref: string) => {
-        // Jika childHref sudah merupakan absolute path (misal: "/superadmin/users"), gunakan langsung.
-        // Jika tidak, gabungkan dengan parent (misal parent="/superadmin", child="users" -> "/superadmin/users")
         return childHref.startsWith('/')
             ? childHref
             : `${parent}/${childHref}`.replace(/\/+/g, '/');
@@ -77,30 +66,24 @@ export default function NavItem({
             {/* Tombol Utama (Parent) */}
             <button
                 onClick={handleClick}
-                disabled={isLocked}
                 className={`group flex items-center justify-between w-full p-3 rounded-2xl transition-all duration-300 
-                    ${isLocked
-                        ? 'opacity-60 cursor-not-allowed bg-slate-50/50 text-slate-400'
-                        : active
-                            ? 'bg-green-600 text-white shadow-lg shadow-green-600/30'
-                            : 'text-slate-500 hover:bg-green-50 hover:text-green-700'
+                    ${active
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-600/30'
+                        : 'text-slate-500 hover:bg-green-50 hover:text-green-700'
                     }`}
             >
                 <div className="flex items-center gap-3">
                     <Icon
                         size={20}
                         className={`transition-transform duration-300 
-                            ${(active && !isLocked) ? 'scale-110' : ''} 
-                            ${!isLocked ? 'group-hover:scale-110' : ''}
+                            ${active ? 'scale-110' : 'group-hover:scale-110'}
                         `}
                     />
                     <span className="font-semibold text-sm">{label}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {isLocked && <Lock size={14} className="text-slate-400" />}
-
-                    {hasChildren && !isLocked && (
+                    {hasChildren && (
                         <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                             <ChevronDown size={16} />
                         </div>
@@ -109,7 +92,7 @@ export default function NavItem({
             </button>
 
             {/* Submenu (Anak) */}
-            {hasChildren && !isLocked && (
+            {hasChildren && (
                 <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                         }`}

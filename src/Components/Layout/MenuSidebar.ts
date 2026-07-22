@@ -46,6 +46,10 @@ export const menuSidebar: MenuSide[] = [
                 label: 'Fron Office',
                 href: 'front-office'
             },
+            {
+                label: 'Anggota',
+                href: 'member'
+            },
         ]
     }
 ];

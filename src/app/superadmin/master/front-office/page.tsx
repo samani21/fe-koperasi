@@ -104,6 +104,25 @@ export default function FrontOfficePage({ }: Props) {
         }
     };
 
+    const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+        try {
+            const formData = new FormData();
+            formData.append('_method', 'PATCH');
+
+            const res = await Post(`super-admin/front-office/${id}/toggle-status`, formData);
+            if (res) {
+                fetchData(); // Refresh tabel
+                setShowAlert({
+                    type: 'success',
+                    message: `Akun berhasil ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`,
+                    isOpen: true
+                });
+            }
+        } catch (err: any) {
+            setShowAlert({ type: 'error', message: 'Gagal mengubah status: ' + err.message, isOpen: true });
+        }
+    };
+
     const onDelete = async (id: number | null) => {
         setIsLoading(true);
         try {
@@ -146,6 +165,24 @@ export default function FrontOfficePage({ }: Props) {
     const columns: Column<FrontOfficeType>[] = useMemo(() => [
         { key: "name", label: "Nama" },
         { key: "email", label: "Email" },
+        {
+            key: "is_active",
+            label: "Status",
+            align: "center",
+            render: (row) => (
+                <button
+                    onClick={() => handleToggleStatus(row.id, row.is_active)}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-1.5 mx-auto ${row.is_active
+                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200'
+                        : 'bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-200'
+                        }`}
+                    title={row.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
+                >
+                    <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+                    {row.is_active ? 'Aktif' : 'Blokir'}
+                </button>
+            ),
+        },
         {
             key: "actions",
             label: "Aksi",

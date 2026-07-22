@@ -14,16 +14,23 @@ export async function Post<T, D>(
 
         // Deteksi jika Backend mengembalikan status 401 (Unauthorized)
         if (error.response?.status === 401) {
-            // Hapus semua state sesi agar benar-benar bersih
-            Cookies.remove('token');
-            Cookies.remove('user');
-            Cookies.remove('role');
 
-            // Lempar ("mental") user kembali ke halaman login
-            window.location.href = '/login';
+            // CEK APAKAH INI JALUR LOGIN
+            const isLoginEndpoint = path.includes('login');
 
-            // Hentikan eksekusi lebih lanjut
-            return Promise.reject(error);
+            // HANYA lempar user ke halaman login JIKA mereka BUKAN sedang mencoba login
+            if (!isLoginEndpoint) {
+                // Hapus semua state sesi agar benar-benar bersih
+                Cookies.remove('token');
+                Cookies.remove('user');
+                Cookies.remove('role');
+
+                // Lempar ("mental") user kembali ke halaman login
+                window.location.href = '/login';
+            }
+
+            // JIKA ini adalah endpoint login, kita lewati blok ini 
+            // dan biarkan catch mengembalikan error ke komponen RightSection!
         }
 
         // Kembalikan langsung error Axios tanpa mengubah jadi Error runtime

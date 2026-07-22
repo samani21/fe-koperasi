@@ -12,8 +12,8 @@ export const useCorrectPath = () => {
         if (pathname?.startsWith('/member') && !cleanPath.startsWith('/member')) {
             return `/member${cleanPath === '/' ? '' : cleanPath}`;
         }
-        if (pathname?.startsWith('/fo') && !cleanPath.startsWith('/fo')) {
-            return `/fo${cleanPath === '/' ? '' : cleanPath}`;
+        if (pathname?.startsWith('front-office') && !cleanPath.startsWith('front-office')) {
+            return `front-office${cleanPath === '/' ? '' : cleanPath}`;
         }
         if (pathname?.startsWith('/superadmin') && !cleanPath.startsWith('/superadmin')) {
             return `/superadmin${cleanPath === '/' ? '' : cleanPath}`;

@@ -27,7 +27,7 @@ export const menuSidebar: MenuSide[] = [
     {
         Icon: LayoutDashboard,
         label: "Dashboard",
-        href: '/fo',
+        href: '/front-office',
         role: ['frontoffice', 'fo']
     },
     {

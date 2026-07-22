@@ -50,7 +50,7 @@ function RightSection({ }: Props) {
                 if (role === 'superadmin' || role === 'admin') {
                     targetUrl = '/superadmin';
                 } else if (role === 'frontoffice' || role === 'fo') {
-                    targetUrl = '/fo';
+                    targetUrl = '/front-office';
                 }
 
                 router.push(targetUrl);
@@ -160,7 +160,7 @@ function RightSection({ }: Props) {
                 // Tentukan rute
                 let targetUrl = '/member';
                 if (userRole === 'superadmin' || userRole === 'admin') targetUrl = '/superadmin';
-                else if (userRole === 'frontoffice' || userRole === 'fo') targetUrl = '/fo';
+                else if (userRole === 'frontoffice' || userRole === 'fo') targetUrl = '/front-office';
 
                 setTimeout(() => {
                     router.push(targetUrl);

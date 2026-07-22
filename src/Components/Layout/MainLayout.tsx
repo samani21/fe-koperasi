@@ -55,7 +55,7 @@ export default function MainLayout({ children, page }: Props) {
         if (role === 'superadmin' || role === 'admin') {
             expectedPath = '/superadmin';
         } else if (role === 'frontoffice' || role === 'fo') {
-            expectedPath = '/fo';
+            expectedPath = '/front-office';
         }
 
         if (!pathname.startsWith(expectedPath)) {

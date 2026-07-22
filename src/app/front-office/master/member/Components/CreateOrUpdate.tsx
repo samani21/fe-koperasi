@@ -204,6 +204,10 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
             hasError = true;
         }
 
+        if (!form.email.trim()) {
+            newErrors.email = "Email harus diisi";
+            hasError = true;
+        }
         if (!form.address.trim()) {
             newErrors.address = "Alamat harus diisi";
             hasError = true;
@@ -325,6 +329,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                             onChange={handleChange}
                             placeholder="Contoh: budi@example.com"
                             error={error.email ?? ''}
+                            required={true}
                         />
                     </div>
                     <div className="md:col-span-2">

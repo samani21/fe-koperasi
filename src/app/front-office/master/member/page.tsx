@@ -23,7 +23,7 @@ export default function FrontOfficePage({ }: Props) {
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [meta, setMeta] = useState<Meta>({ last_page: 1, limit: 10, page: 1, total: 0 });
-
+    const [dateRangeText, setDateRangeText] = useState("");
     // --- DATA & UI STATE ---
     const [dataList, setDataList] = useState<MemberType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -58,15 +58,39 @@ export default function FrontOfficePage({ }: Props) {
     }, [debouncedSearch, itemsPerPage]);
 
     // 4. Query String Builder
+    // 4. Parser Tanggal (Aman dari Invalid Date)
+    const parsedDate = useMemo(() => {
+        if (!dateRangeText.includes(" - ")) return { start_date: "", end_date: "" };
+
+        const monthMap: Record<string, string> = {
+            Jan: "01", Feb: "02", Mar: "03", Apr: "04", Mei: "05", Jun: "06",
+            Jul: "07", Agt: "08", Agu: "08", Sep: "09", Okt: "10", Nov: "11", Des: "12",
+        };
+
+        const formatDate = (dateStr: string) => {
+            if (!dateStr) return "";
+            const parts = dateStr.trim().split(" ");
+            if (parts.length !== 3) return "";
+            const [day, month, year] = parts;
+            return `${year}-${monthMap[month] || "01"}-${day.padStart(2, "0")}`;
+        };
+
+        const [start, end] = dateRangeText.split(" - ");
+        return { start_date: formatDate(start), end_date: formatDate(end) };
+    }, [dateRangeText]);
+
+    // 5. Query String Builder
     const queryString = useMemo(() => {
         const params = new URLSearchParams();
         params.append("page", page.toString());
         params.append("limit", itemsPerPage.toString());
 
-        if (debouncedSearch.trim()) params.append("name", debouncedSearch); // Diganti jadi 'name' sesuai backend
+        if (debouncedSearch.trim()) params.append("search", debouncedSearch);
+        if (parsedDate.start_date) params.append("start_date", parsedDate.start_date);
+        if (parsedDate.end_date) params.append("end_date", parsedDate.end_date);
 
         return `?${params.toString()}`;
-    }, [page, debouncedSearch, itemsPerPage]);
+    }, [parsedDate, page, debouncedSearch, itemsPerPage]);
 
 
     const fetchData = useCallback(async () => {
@@ -125,6 +149,7 @@ export default function FrontOfficePage({ }: Props) {
 
     const handleResetFilter = () => {
         setSearch("");
+        setDateRangeText("");
     };
 
     const handleCloseModal = () => {
@@ -155,6 +180,7 @@ export default function FrontOfficePage({ }: Props) {
             },
         },
         { key: "full_name", label: "Nama Lengkap Anggota" },
+        { key: "member_number", label: "Nomor Anggota" },
         {
             key: "email",
             label: "email",
@@ -208,7 +234,8 @@ export default function FrontOfficePage({ }: Props) {
                     setPage={setPage}
                     handleReset={handleResetFilter}
                     setIsModalOpenForm={setIsModalOpen}
-                    isDateRange={false}
+                    isDateRange={true}
+                    setDateRangeText={setDateRangeText}
                 />
 
                 <div className="mt-6">

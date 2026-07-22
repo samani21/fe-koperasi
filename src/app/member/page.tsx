@@ -49,19 +49,21 @@ function page({ }: Props) {
     return (
         <MainLayout>
             {/* Lempar state loading ke dalam FormMember */}
-            <FormMember
-                handleFormSubmit={handleFormSubmit}
-                data={data}
-                isLoading={loading}
-            />
-
-            {showAlert?.isOpen && (
-                <Alert
-                    type={showAlert.type}
-                    message={showAlert.message}
-                    onClose={() => setShowAlert(null)}
+            <div className='pb-12'> 
+                <FormMember
+                    handleFormSubmit={handleFormSubmit}
+                    data={data}
+                    isLoading={loading}
                 />
-            )}
+
+                {showAlert?.isOpen && (
+                    <Alert
+                        type={showAlert.type}
+                        message={showAlert.message}
+                        onClose={() => setShowAlert(null)}
+                    />
+                )}
+            </div>
         </MainLayout>
     )
 }

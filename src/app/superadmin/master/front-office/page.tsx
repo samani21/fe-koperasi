@@ -170,17 +170,19 @@ export default function FrontOfficePage({ }: Props) {
             label: "Status",
             align: "center",
             render: (row) => (
-                <button
-                    onClick={() => handleToggleStatus(row.id, row.is_active)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-1.5 mx-auto ${row.is_active
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200'
-                        : 'bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-200'
-                        }`}
-                    title={row.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
-                >
-                    <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
-                    {row.is_active ? 'Aktif' : 'Blokir'}
-                </button>
+                <div className=''>
+                    <button
+                        onClick={() => handleToggleStatus(row.id, row.is_active)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-1.5 mx-auto ${row.is_active
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-200'
+                            }`}
+                        title={row.is_active ? "Klik untuk menonaktifkan" : "Klik untuk mengaktifkan"}
+                    >
+                        <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+                        {row.is_active ? 'Aktif' : 'Blokir'}
+                    </button>
+                </div>
             ),
         },
         {

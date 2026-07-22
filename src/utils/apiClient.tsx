@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { getToken } from "./Cookies";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL + "api/" || "http://localhost:8000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api/" || "http://localhost:8000/api";
 
 export const apiClient: AxiosInstance = axios.create({
     baseURL: API_URL,

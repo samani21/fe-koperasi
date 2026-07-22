@@ -43,7 +43,7 @@ export const menuSidebar: MenuSide[] = [
         role: ['superadmin'],
         child: [
             {
-                label: 'Fron Office',
+                label: 'Front Office',
                 href: 'front-office'
             },
             {

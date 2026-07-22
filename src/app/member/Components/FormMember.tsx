@@ -398,6 +398,7 @@ const FormMember = ({ handleFormSubmit, data, isLoading }: Props) => {
                         onChange={handleChange}
                         placeholder="Contoh: budi@example.com"
                         error={error.email ?? ''}
+                        disabled={true}
                     />
 
                     <FormInput

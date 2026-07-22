@@ -57,8 +57,9 @@ export default function SidebarComponent({ isSidebarOpen, setIsSidebarOpen, setL
                         {menuSidebar
                             .filter((menu) => menu.role.includes(currentRole))
                             .map((menu, i) => {
-                                const isOpen = menu.href === '/' + currentRole
-                                    ? pathname === '/' + currentRole
+                                const roleURL = currentRole === 'frontoffice' ? "front-office" : currentRole;
+                                const isOpen = menu.href === '/' + roleURL
+                                    ? pathname === '/' + roleURL
                                     : pathname.startsWith(menu.href);
 
                                 return (

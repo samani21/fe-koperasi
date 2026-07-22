@@ -9,7 +9,7 @@ import { SelectOption } from "./CRUD";
 // ==========================================
 type Props = {
     label: string;
-    type: "text" | "number" | "date" | "email" | "password" | "autocomplete" | "image";
+    type: "text" | "number" | "date" | "email" | 'textarea' | "password" | "autocomplete" | "image";
     name: string;
     value?: any;
     onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | any) => void;
@@ -47,17 +47,14 @@ export default function FormInput({
     const fileStyle = `file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 file:transition-colors cursor-pointer ${disabled ? "opacity-60 cursor-not-allowed file:cursor-not-allowed" : ""}`;
 
     // --- Hooks & Effects ---
-
-    // Autocomplete: Sinkronisasi nilai value ke search input
     useEffect(() => {
         if (type === "autocomplete" && value !== undefined) {
             const selected = options.find((opt) => opt.value?.toString() === value?.toString());
             if (selected) setSearch(selected.label);
-            else if (!value) setSearch(""); // Reset jika value kosong
+            else if (!value) setSearch("");
         }
     }, [value, options, type]);
 
-    // Menutup dropdown autocomplete jika klik di luar komponen
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -68,21 +65,18 @@ export default function FormInput({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Image: Membuat Object URL untuk Preview Gambar
     useEffect(() => {
         if (type === "image" && value instanceof File) {
             const objectUrl = URL.createObjectURL(value);
             setPreview(objectUrl);
             return () => URL.revokeObjectURL(objectUrl);
         } else if (type === "image" && typeof value === 'string') {
-            // Berjaga-jaga jika value berupa URL gambar yang sudah ada (dari server)
             setPreview(value);
         } else {
             setPreview(null);
         }
     }, [value, type]);
 
-    // Filter options untuk Autocomplete
     const filteredOptions = useMemo(() => {
         if (!open) return [];
         if (!search) return options;
@@ -105,7 +99,6 @@ export default function FormInput({
                                 if (!disabled) {
                                     setSearch(e.target.value);
                                     setOpen(true);
-                                    // Kosongkan value utama jika user mengetik ulang
                                     if (value) onChange({ target: { name, value: '' } });
                                 }
                             }}
@@ -192,6 +185,20 @@ export default function FormInput({
                     </div>
                 );
 
+            // --- TIPE BARU: TEXTAREA ---
+            case "textarea":
+                return (
+                    <textarea
+                        name={name}
+                        disabled={disabled}
+                        value={value ?? ""}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        rows={4} // Default tinggi textarea
+                        className={`${baseInput} resize-y min-h-[100px]`}
+                    />
+                );
+
             // Default untuk: text, number, date, email
             default:
                 return (
@@ -212,7 +219,6 @@ export default function FormInput({
 
     return (
         <div className="flex flex-col space-y-2 w-full">
-            {/* Header (Label & Info) */}
             <div className="flex items-center gap-2">
                 <label className={`text-sm font-bold tracking-wide flex items-center gap-1 ${disabled ? "text-slate-400" : "text-slate-700"}`}>
                     {label} {required && <span className="text-red-500">*</span>}
@@ -231,10 +237,8 @@ export default function FormInput({
                 )}
             </div>
 
-            {/* Input Element */}
             {renderInputElement()}
 
-            {/* Error Message */}
             {error && (
                 <p className="text-sm font-medium text-red-500 flex items-center mt-1.5 animate-in slide-in-from-top-1 fade-in duration-200">
                     <AlertTriangle size={16} className="mr-1.5 shrink-0" />

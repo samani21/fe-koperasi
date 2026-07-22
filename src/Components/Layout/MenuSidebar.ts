@@ -51,5 +51,17 @@ export const menuSidebar: MenuSide[] = [
                 href: 'member'
             },
         ]
+    },
+    {
+        Icon: Users,
+        label: "Data Master",
+        href: '/front-office/master',
+        role: ['frontoffice'],
+        child: [
+            {
+                label: 'Anggota',
+                href: 'member'
+            },
+        ]
     }
 ];

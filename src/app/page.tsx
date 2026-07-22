@@ -30,7 +30,7 @@ export default function WelcomePage() {
                 router.push(targetUrl);
                 return;
             } catch (error) {
-                console.error("Gagal membaca data pengguna", error);
+                // console.error("Gagal membaca data pengguna", error);
             }
         }
     }, [token, router]);

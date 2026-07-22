@@ -56,7 +56,7 @@ function RightSection({ }: Props) {
                 router.push(targetUrl);
                 return;
             } catch (error) {
-                console.error("Gagal membaca data pengguna", error);
+                // console.error("Gagal membaca data pengguna", error);
             }
         }
 

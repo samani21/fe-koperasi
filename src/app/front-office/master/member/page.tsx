@@ -13,6 +13,7 @@ import ModalCrud from '@/Components/CRUD/ModalCrud';
 import Alert from '@/Components/CRUD/Alert';
 import { MemberType } from '@/app/Types/MemberType';
 import CreateOrUpdate from './Components/CreateOrUpdate';
+import { formatImage } from '@/utils/FormatImage';
 
 type Props = {}
 
@@ -148,9 +149,8 @@ export default function FrontOfficePage({ }: Props) {
         {
             key: "photo", label: "Photo",
             render: (row) => {
-                const BaseAPi = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
                 if (row?.photo) {
-                    return <img src={BaseAPi + row?.photo}  className='w-32 '/>
+                    return <img src={formatImage(row?.photo)} className='w-32 ' />
                 }
             },
         },
@@ -172,6 +172,7 @@ export default function FrontOfficePage({ }: Props) {
             ),
         },
         { key: "address", label: "Alamat" },
+        { key: "phone", label: "No Hp" },
 
         {
             key: "actions",

@@ -2,40 +2,39 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import FormInput from "@/Components/CRUD/FormInput";
-import ButtonSubmit from "@/Components/CRUD/ButtonSubmit";
 import { MemberType } from "@/app/Types/MemberType";
 import Cropper from "react-easy-crop";
-import { X, UploadCloud } from "lucide-react";
+import { X, UploadCloud, Loader2, CheckCircle2 } from "lucide-react";
 import { formatImage } from "@/utils/FormatImage";
 
 type Props = {
     handleFormSubmit: (form: FormData, id: number | null) => void;
     data: MemberType | null;
-    onCancel?: () => void;
+    isLoading?: boolean;
 };
 
 interface FormState {
     full_name: string;
     email: string;
-    phone: string;
+    phone: string; // 1. Tambahkan state phone
     nik: string;
     address: string;
     password: string;
     photo: Blob | null;
     photoPreview: string;
-    remove_photo: boolean; // 1. Tambahkan flag ini
+    remove_photo: boolean;
 }
 
 interface FormErrors {
     full_name?: string | null;
     email?: string | null;
-    phone?: string | null;
+    phone?: string | null; // 2. Tambahkan error phone
     nik?: string | null;
     address?: string | null;
     password?: string | null;
 }
 
-const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
+const FormMember = ({ handleFormSubmit, data, isLoading }: Props) => {
     const [form, setForm] = useState<FormState>({
         full_name: "",
         email: "",
@@ -60,22 +59,21 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
 
     const baseApi = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-    // Sinkronisasi data saat props `data` berubah (Misal edit data)
     useEffect(() => {
         if (data) {
             setForm({
                 full_name: data.full_name || "",
                 email: data.user?.email || "",
-                nik: data?.user.nik || "",
-                phone: data?.phone || "",
+                phone: (data as any).phone || "", // Ambil data phone lama jika ada
+                nik: data?.user?.nik || "",
                 address: (data as any).address || "",
                 password: '',
                 photo: null,
                 photoPreview: data.photo ? formatImage(data.photo) ?? '' : "",
-                remove_photo: false, // Reset flag saat data dimuat
+                remove_photo: false,
             });
         } else {
-            setForm({ full_name: "", email: "", nik: "", address: "", password: '', phone: '', photo: null, photoPreview: "", remove_photo: false });
+            setForm({ full_name: "", email: "", phone: "", nik: "", address: "", password: '', photo: null, photoPreview: "", remove_photo: false });
         }
         setError({});
     }, [data, baseApi]);
@@ -87,7 +85,9 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
             const numericValue = value.replace(/[^0-9]/g, "");
             if (numericValue.length > 16) return;
             setForm((prev) => ({ ...prev, [name]: numericValue }));
-        } else if (name === "phone") {
+        }
+        // 3. LOGIKA AUTO-FORMAT PHONE +62
+        else if (name === "phone") {
             // Bersihkan semua karakter kecuali angka dan plus
             let val = value.replace(/[^0-9+]/g, "");
 
@@ -111,7 +111,8 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
             if (val.length > 16) return;
 
             setForm((prev) => ({ ...prev, [name]: val }));
-        } else {
+        }
+        else {
             setForm((prev) => ({ ...prev, [name]: value }));
         }
 
@@ -173,7 +174,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                         ...prev,
                         photo: croppedBlob,
                         photoPreview: croppedUrl,
-                        remove_photo: false // 2. Jika user upload foto baru, batalkan flag hapus
+                        remove_photo: false
                     }));
                 }
             }
@@ -209,6 +210,12 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
             hasError = true;
         }
 
+        // Validasi opsional: Jika diisi, pastikan panjangnya wajar
+        if (form.phone && form.phone.length < 10) {
+            newErrors.phone = "Nomor telepon tidak valid";
+            hasError = true;
+        }
+
         if (hasError) {
             setError(newErrors);
             return;
@@ -224,7 +231,6 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                 }
             });
 
-            // 3. Kirim flag remove_photo ke backend jika nilainya true
             if (form.remove_photo) {
                 formData.append("remove_photo", "1");
             }
@@ -241,51 +247,119 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
         }
     };
 
-    return (
-        <>
-            <form onSubmit={handleSubmit} className="space-y-6">
+    // --- TAMPILAN SKELETON ---
+    if (isLoading) {
+        return (
+            <div className="space-y-6 animate-pulse">
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-gray-700">Foto Profil (Opsional)</label>
-
+                    <div className="h-4 w-32 bg-slate-200 rounded-md"></div>
                     <div className="flex items-center gap-6">
-                        {form.photoPreview ? (
-                            <div className="relative w-24 h-24 shrink-0">
-                                <img
-                                    src={form.photoPreview}
-                                    alt="Preview"
-                                    className="w-full h-full object-cover rounded-2xl border-2 border-green-100 shadow-sm"
-                                />
-                                <button
-                                    type="button" // AMAN: Mencegah form submit
-                                    onClick={() => setForm(prev => ({ ...prev, photo: null, photoPreview: "", remove_photo: true }))} // 4. Set flag remove_photo ke true
-                                    className="absolute -top-2 -right-2 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-1"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="w-24 h-24 shrink-0 bg-slate-50 border border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-400">
-                                <UploadCloud className="w-8 h-8 mb-1" />
-                                <span className="text-[10px] font-medium">No Image</span>
-                            </div>
-                        )}
-
-                        <div className="flex-1">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all cursor-pointer"
-                            />
-                            <p className="text-xs text-slate-400 mt-2">
-                                Format didukung: JPG, PNG, WEBP. Maks 2MB. Gambar otomatis dipotong 1:1.
-                            </p>
+                        <div className="w-24 h-24 shrink-0 bg-slate-200 rounded-2xl"></div>
+                        <div className="flex-1 space-y-3">
+                            <div className="h-10 w-full bg-slate-200 rounded-xl"></div>
+                            <div className="h-3 w-3/4 bg-slate-200 rounded-md"></div>
                         </div>
                     </div>
                 </div>
 
-                {/* --- Input Fields --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Skeleton Nama & NIK */}
+                    <div className="space-y-2">
+                        <div className="h-4 w-28 bg-slate-200 rounded-md"></div>
+                        <div className="h-11 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="h-4 w-16 bg-slate-200 rounded-md"></div>
+                        <div className="h-11 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+
+                    {/* Skeleton Email & Phone */}
+                    <div className="space-y-2">
+                        <div className="h-4 w-20 bg-slate-200 rounded-md"></div>
+                        <div className="h-11 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+                        <div className="h-11 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+
+                    {/* Skeleton Alamat & Password */}
+                    <div className="md:col-span-2 space-y-2">
+                        <div className="h-4 w-32 bg-slate-200 rounded-md"></div>
+                        <div className="h-24 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+                    <div className="md:col-span-2 space-y-2">
+                        <div className="h-4 w-36 bg-slate-200 rounded-md"></div>
+                        <div className="h-11 w-full bg-slate-200 rounded-xl"></div>
+                    </div>
+                </div>
+
+                <div className="pt-4">
+                    <div className="h-[56px] w-full bg-slate-200 rounded-2xl"></div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- TAMPILAN FORM ASLI ---
+    return (
+        <>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-gray-700">Foto Profil</label>
+
+                    <div className="w-full md:flex items-start justify-between gap-6">
+                        <div className="flex items-center gap-6 w-full">
+                            {form.photoPreview ? (
+                                <div className="relative w-24 h-24 shrink-0">
+                                    <img
+                                        src={form.photoPreview}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover rounded-2xl border-2 border-green-100 shadow-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm(prev => ({ ...prev, photo: null, photoPreview: "", remove_photo: true }))}
+                                        className="absolute -top-2 -right-2 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-1"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="w-24 h-24 shrink-0 bg-slate-50 border border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-400">
+                                    <UploadCloud className="w-8 h-8 mb-1" />
+                                    <span className="text-[10px] font-medium">No Image</span>
+                                </div>
+                            )}
+
+                            <div className="flex-1">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all cursor-pointer"
+                                />
+                                <p className="text-xs text-slate-400 mt-2">
+                                    Format didukung: JPG, PNG, WEBP. Maks 2MB. Gambar otomatis dipotong 1:1.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mt-4 md:mt-0">
+                            <FormInput
+                                type="text"
+                                label="Nomor Anggota"
+                                name="number_member"
+                                value={data?.member_number}
+                                onChange={handleChange}
+                                placeholder="Contoh: Budi Santoso"
+                                disabled
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Baris 1: Nama & NIK */}
                     <FormInput
                         type="text"
                         label="Nama Anggota"
@@ -293,8 +367,8 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                         value={form.full_name}
                         onChange={handleChange}
                         placeholder="Contoh: Budi Santoso"
+                        disabled
                         error={error.full_name ?? ''}
-                        required={true}
                     />
 
                     <div className="flex flex-col">
@@ -306,7 +380,6 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                             onChange={handleChange}
                             placeholder="Contoh: 3171234567890001"
                             error={error.nik ?? ''}
-                            required={true}
                             disabled={data?.user?.nik ? true : false}
                         />
                         {!error.nik && (
@@ -316,28 +389,27 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                         )}
                     </div>
 
-                    <div className="md:col-span-2">
-                        <FormInput
-                            type="email"
-                            label="Email"
-                            name="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            placeholder="Contoh: budi@example.com"
-                            error={error.email ?? ''}
-                        />
-                    </div>
-                    <div className="md:col-span-2">
-                        <FormInput
-                            type="text"
-                            label="No. Telepon / WA"
-                            name="phone"
-                            value={form.phone}
-                            onChange={handleChange}
-                            placeholder="Contoh: +6281234567890"
-                            error={error.phone ?? ''}
-                        />
-                    </div>
+                    {/* Baris 2: Email & Phone */}
+                    <FormInput
+                        type="email"
+                        label="Email"
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="Contoh: budi@example.com"
+                        error={error.email ?? ''}
+                    />
+
+                    <FormInput
+                        type="text"
+                        label="No. Telepon / WA"
+                        name="phone"
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder="Contoh: +6281234567890"
+                        error={error.phone ?? ''}
+                    />
+
                     <div className="md:col-span-2">
                         <FormInput
                             type="textarea"
@@ -350,6 +422,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                             required={true}
                         />
                     </div>
+
                     <div className="md:col-span-2">
                         <FormInput
                             type="password"
@@ -361,13 +434,34 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                             information={
                                 data
                                     ? "Kosongkan jika tidak ingin mengubah password."
-                                    : "Password default sesuai nik jika dikosongkan."
+                                    : "Password default sesuai nama jika dikosongkan."
                             }
                         />
                     </div>
                 </div>
 
-                <ButtonSubmit onClose={onCancel} isSubmitting={loading} />
+                <div className="flex items-center justify-right gap-4 pt-4">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className=" flex-grow group relative overflow-hidden py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-md shadow-emerald-200 hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50"
+                    >
+                        <div className="relative z-10 flex items-center justify-center gap-2">
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>MENGIRIM...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>SIMPAN</span>
+                                    <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                </>
+                            )}
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                </div>
             </form>
 
             {/* --- Modal Cropper --- */}
@@ -377,7 +471,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
                             <h3 className="font-bold text-slate-800">Sesuaikan Foto</h3>
                             <button
-                                type="button" // AMAN
+                                type="button"
                                 onClick={() => {
                                     setIsCropModalOpen(false);
                                     setImageSrc(null);
@@ -417,7 +511,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                             </div>
                             <div className="flex justify-end gap-3 mt-2">
                                 <button
-                                    type="button" // AMAN
+                                    type="button"
                                     onClick={() => {
                                         setIsCropModalOpen(false);
                                         setImageSrc(null);
@@ -427,7 +521,7 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
                                     Batal
                                 </button>
                                 <button
-                                    type="button" // AMAN
+                                    type="button"
                                     onClick={handleCropImage}
                                     className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/30 transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                                 >
@@ -442,4 +536,4 @@ const CreateOrUpdate = ({ handleFormSubmit, data, onCancel }: Props) => {
     );
 };
 
-export default CreateOrUpdate;
+export default FormMember;

@@ -13,7 +13,7 @@ type Props = {
     role: string
 }
 
-const DashboardSuperAdmin = ({ role }: Props) => {
+const Dashboard = ({ role }: Props) => {
     const {
         isLoading, isDateModalOpen, setIsDateModalOpen,
         startDate, setStartDate, endDate, setEndDate, activeFilterLabel,
@@ -24,6 +24,7 @@ const DashboardSuperAdmin = ({ role }: Props) => {
     const currentYear = new Date().getFullYear();
     const recentYears = [currentYear, currentYear - 1, currentYear - 2];
     const url = role === 'superadmin' ? "/superadmin/master/member" : "/front-office/master/member"
+
     return (
         <MainLayout>
             <main className={isDateModalOpen ? "p-4 sm:p-8 animate-fade-in relative z-[100]" : "p-4 sm:p-8 animate-fade-in relative z-10"}>
@@ -31,8 +32,8 @@ const DashboardSuperAdmin = ({ role }: Props) => {
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center">
-                            Dashboard Super Admin
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center capitalize">
+                            Dashboard {role === 'superadmin' ? 'Super Admin' : 'Front Office'}
                         </h1>
                         <p className="text-gray-500 mt-2 font-medium">Ringkasan performa dan keanggotaan Koperasi Syariah.</p>
                     </div>
@@ -90,8 +91,8 @@ const DashboardSuperAdmin = ({ role }: Props) => {
                 {/* Layout Utama: Grafik (Kiri) & List Member Terbaru (Kanan) */}
                 <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    {/* Grafik Anggota (2 Kolom) */}
-                    <div className="lg:col-span-3 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
+                    {/* Grafik Anggota (2 Kolom) -> Perbaikan class dari lg:col-span-3 menjadi lg:col-span-2 */}
+                    <div className="lg:col-span-2 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">Grafik Pertumbuhan Anggota</h2>
@@ -138,8 +139,8 @@ const DashboardSuperAdmin = ({ role }: Props) => {
                         </div>
                     </div>
 
-                    {/* Daftar Member Terbaru (1 Kolom) */}
-                    <div className="lg:col-span-3 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 flex flex-col">
+                    {/* Daftar Member Terbaru (1 Kolom) -> Perbaikan class dari lg:col-span-3 menjadi lg:col-span-1 */}
+                    <div className="lg:col-span-1 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 flex flex-col">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-gray-900">Anggota Terbaru</h2>
                             <Link href={url} className="group flex items-center gap-1 text-sm font-bold text-green-600 hover:text-green-700 bg-green-50 px-3 py-1.5 rounded-full transition-all">
@@ -296,4 +297,4 @@ const DashboardSuperAdmin = ({ role }: Props) => {
     );
 };
 
-export default DashboardSuperAdmin
+export default Dashboard

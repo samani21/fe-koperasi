@@ -1,6 +1,7 @@
 "use client"
 
-import Dashboard from "../Components/DashboardSuperAdmin";
+import Dashboard from "../Components/Dashboard";
+
 
 
 export default function App() {

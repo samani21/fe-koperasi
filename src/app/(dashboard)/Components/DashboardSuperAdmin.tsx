@@ -1,26 +1,29 @@
 'use client'
 import {
-    ChevronDown, Calendar, Filter, Users, UserCog, XCircle, Zap, ShieldCheck, CalendarDays
+    ChevronDown, Calendar, Filter, Users, UserCog, XCircle, Zap, ShieldCheck, CalendarDays, ArrowRight, UserCircle2
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import MainLayout from '@/Components/Layout/MainLayout';
 import useDashboardData from './useDashboardData';
+import Link from 'next/link';
 
-type Props = {}
+type Props = {
+    role: string
+}
 
-const DashboardSuperAdmin = () => {
+const DashboardSuperAdmin = ({ role }: Props) => {
     const {
         isLoading, isDateModalOpen, setIsDateModalOpen,
         startDate, setStartDate, endDate, setEndDate, activeFilterLabel,
-        stats, chartData, applyQuickFilter, applyYearFilter, applyCustomFilter
+        stats, chartData, applyQuickFilter, applyYearFilter, applyCustomFilter,
+        recentMembers // <-- Pastikan ini sudah diexport dari useDashboardData
     } = useDashboardData();
 
-    // Dinamis mendapatkan 3 tahun terakhir
     const currentYear = new Date().getFullYear();
     const recentYears = [currentYear, currentYear - 1, currentYear - 2];
-
+    const url = role === 'superadmin' ? "/superadmin/master/member" : "/front-office/master/member"
     return (
         <MainLayout>
             <main className={isDateModalOpen ? "p-4 sm:p-8 animate-fade-in relative z-[100]" : "p-4 sm:p-8 animate-fade-in relative z-10"}>
@@ -33,7 +36,6 @@ const DashboardSuperAdmin = () => {
                         </h1>
                         <p className="text-gray-500 mt-2 font-medium">Ringkasan performa dan keanggotaan Koperasi Syariah.</p>
                     </div>
-
                 </div>
 
                 {/* Filter Action Bar */}
@@ -56,33 +58,45 @@ const DashboardSuperAdmin = () => {
 
                 {/* Kartu Statistik */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { title: 'Total Anggota', value: stats?.total_member || 0, icon: <Users className="h-6 w-6 text-white" /> },
-                        { title: 'Total Front Office', value: stats?.total_fo || 0, icon: <UserCog className="h-6 w-6 text-white" /> },
-                    ].map((item, idx) => (
-                        <div key={idx} className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
+                        <div className="flex items-center justify-between mb-5 relative z-10">
+                            <div className="bg-gradient-to-br from-green-500 to-green-700 p-3.5 rounded-2xl shadow-lg shadow-green-600/30 group-hover:scale-110 transition-transform duration-300">
+                                <Users className="h-6 w-6 text-white" />
+                            </div>
+                        </div>
+                        <div className="relative z-10">
+                            <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-900 tracking-tight">{isLoading ? '...' : stats?.total_member || 0}</h3>
+                            <p className="text-sm font-semibold text-gray-500 mt-1">Total Anggota</p>
+                        </div>
+                    </div>
+                    {
+                        role === 'superadmin' &&
+                        <div className="group relative overflow-hidden p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-full translate-x-10 -translate-y-10 pointer-events-none"></div>
                             <div className="flex items-center justify-between mb-5 relative z-10">
                                 <div className="bg-gradient-to-br from-green-500 to-green-700 p-3.5 rounded-2xl shadow-lg shadow-green-600/30 group-hover:scale-110 transition-transform duration-300">
-                                    {item.icon}
+                                    <UserCog className="h-6 w-6 text-white" />
                                 </div>
                             </div>
                             <div className="relative z-10">
-                                <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-900 tracking-tight">{isLoading ? '...' : item.value}</h3>
-                                <p className="text-sm font-semibold text-gray-500 mt-1">{item.title}</p>
+                                <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-900 tracking-tight">{isLoading ? '...' : stats?.total_fo || 0}</h3>
+                                <p className="text-sm font-semibold text-gray-500 mt-1">Total Front Office</p>
                             </div>
                         </div>
-                    ))}
+                    }
                 </div>
 
-                {/* Grafik Anggota */}
-                <div className="mt-6 w-full">
-                    <div className="p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
+                {/* Layout Utama: Grafik (Kiri) & List Member Terbaru (Kanan) */}
+                <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    {/* Grafik Anggota (2 Kolom) */}
+                    <div className="lg:col-span-3 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">Grafik Pertumbuhan Anggota</h2>
                                 <p className="text-xs font-medium text-gray-500 mt-1">
-                                    Menampilkan data <span className="text-green-700 font-bold">{chartData.length > 0 ? chartData[0].type : ''}</span>
+                                    Menampilkan data <span className="text-green-700 font-bold">{chartData?.length > 0 ? chartData[0].type : 'Pendaftaran'}</span>
                                 </p>
                             </div>
                         </div>
@@ -101,7 +115,6 @@ const DashboardSuperAdmin = () => {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
-                                        {/* Tambahkan tickFormatter jika perlu styling label lagi, tapi BE sudah ngasih text jadi langsung pakai dataKey="name" */}
                                         <XAxis dataKey="name" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 600 }} dy={10} />
                                         <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 600 }} />
                                         <Tooltip
@@ -124,9 +137,55 @@ const DashboardSuperAdmin = () => {
                             )}
                         </div>
                     </div>
+
+                    {/* Daftar Member Terbaru (1 Kolom) */}
+                    <div className="lg:col-span-3 p-6 bg-white/50 backdrop-blur-2xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 flex flex-col">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-gray-900">Anggota Terbaru</h2>
+                            <Link href={url} className="group flex items-center gap-1 text-sm font-bold text-green-600 hover:text-green-700 bg-green-50 px-3 py-1.5 rounded-full transition-all">
+                                Lihat Semua
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 max-h-[350px]">
+                            {isLoading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <div key={i} className="flex items-center gap-4 animate-pulse">
+                                        <div className="w-10 h-10 bg-slate-200 rounded-full shrink-0"></div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : recentMembers && recentMembers.length > 0 ? (
+                                recentMembers.map((member: any) => (
+                                    <div key={member.id} className="flex items-center gap-4 group p-2 hover:bg-white rounded-2xl transition-colors border border-transparent hover:border-slate-100 hover:shadow-sm">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shrink-0 border border-green-200 text-green-600">
+                                            <UserCircle2 className="w-6 h-6" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-gray-900 truncate group-hover:text-green-700 transition-colors">
+                                                {member.full_name}
+                                            </p>
+                                            <p className="text-xs font-medium text-gray-500 truncate mt-0.5">
+                                                No: {member.member_number}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                                    <Users className="w-10 h-10 text-slate-300 mb-2" />
+                                    <p className="text-sm font-medium text-slate-500">Belum ada anggota baru</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {/* MODAL FILTER TANGGAL (TETAP SAMA SEPERTI SEBELUMNYA) */}
+                {/* MODAL FILTER TANGGAL (TETAP SAMA) */}
                 {isDateModalOpen && (
                     <div className="fixed inset-0 z-[1500] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-md animate-fade-in">
                         <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-white transform transition-all scale-in">
@@ -225,8 +284,12 @@ const DashboardSuperAdmin = () => {
                     @keyframes scaleIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
                     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
                     .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                    @keyframes wave { 0% { transform: rotate(0.0deg) } 10% { transform: rotate(14.0deg) } 20% { transform: rotate(-8.0deg) } 30% { transform: rotate(14.0deg) } 40% { transform: rotate(-4.0deg) } 50% { transform: rotate(10.0deg) } 60% { transform: rotate(0.0deg) } 100% { transform: rotate(0.0deg) } }
-                    .hover\\:animate-wave:hover { animation: wave 2.5s infinite; transform-origin: 70% 70%; }
+                    
+                    /* Custom Scrollbar untuk List Member */
+                    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+                    .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
                 `}</style>
             </main>
         </MainLayout>

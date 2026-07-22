@@ -6,25 +6,10 @@ import { Get } from '@/utils/Get';
 import MainLayout from '@/Components/Layout/MainLayout';
 import FilterComponent from '@/Components/CRUD/FilterComponent';
 import Alert from '@/Components/CRUD/Alert'; // Pastikan di-import
+import { MemberType } from '@/app/Types/MemberType';
 
 type Props = {}
 
-interface UserType {
-    id: number;
-    name: string;
-    email: string;
-    nik: string;
-}
-
-interface MemberType {
-    id: number;
-    address: string;
-    member_number: string;
-    full_name: string;
-    phone: string;
-    photo: string;
-    user: UserType;
-}
 
 export default function MemberPage({ }: Props) { // Ubah nama fungsi biar sesuai konteks
     const [search, setSearch] = useState("");

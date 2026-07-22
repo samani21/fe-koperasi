@@ -1,12 +1,14 @@
-import MainLayout from '@/Components/Layout/MainLayout'
-import React from 'react'
+"use client"
 
-type Props = {}
+import Dashboard from "../Components/DashboardSuperAdmin";
 
-const page = (props: Props) => {
+
+export default function App() {
     return (
-        <MainLayout>page</MainLayout>
-    )
+        <div className="flex h-screen bg-slate-50 font-sans selection:bg-green-200 selection:text-green-900 overflow-hidden relative">
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent relative">
+                <Dashboard role={'frontoffice'} />
+            </main>
+        </div>
+    );
 }
-
-export default page

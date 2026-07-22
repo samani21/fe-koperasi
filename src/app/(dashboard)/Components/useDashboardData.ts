@@ -1,7 +1,8 @@
 'use client'
+import { MemberType } from '@/app/Types/MemberType';
 import { Get } from '@/utils/Get';
 import React, { useCallback, useEffect, useState } from 'react'
-
+import Cookies from 'js-cookie';
 type Props = {}
 
 // --- TYPES KOPERASI ---
@@ -35,20 +36,40 @@ const useDashboardData = () => {
     const [stats, setStats] = useState<StatsType | null>(null);
     const [chartData, setChartData] = useState<MemberChartType[]>([]);
 
+    const [recentMembers, setRecentMembers] = useState<MemberType[]>([]);
+
     const fetchDashboard = useCallback(async () => {
         if (!startDate || !endDate) return;
         setIsLoading(true);
 
         try {
-            // Panggil API backend, mengirim start_date dan end_date
-            // Sesuaikan endpoint '/admin/dashboard' dengan route Laravel Anda
-            const response = await Get<any>(`super-admin/dashboard?start_date=${startDate}&end_date=${endDate}`);
+            const userCookie = Cookies.get('user');
 
-            // Berdasarkan function Laravel (apiService->successWithData), 
-            // datanya kemungkinan bersarang di response.data
-            if (response && response.data) {
-                setStats(response.data.stats);
-                setChartData(response.data.chartData);
+            const parsedUser = JSON.parse(userCookie as string);
+            if (parsedUser?.role === 'superadmin') {
+                // Panggil API backend, mengirim start_date dan end_date
+                // Sesuaikan endpoint '/admin/dashboard' dengan route Laravel Anda
+                const response = await Get<{ success: boolean, data: any }>(`super-admin/dashboard?start_date=${startDate}&end_date=${endDate}`);
+
+                // Berdasarkan function Laravel (apiService->successWithData), 
+                // datanya kemungkinan bersarang di response.data
+                if (response && response.data) {
+                    setStats(response.data.stats);
+                    setChartData(response.data.chartData);
+                    setRecentMembers(response?.data?.recent_members)
+                }
+            } else {
+                // Panggil API backend, mengirim start_date dan end_date
+                // Sesuaikan endpoint '/admin/dashboard' dengan route Laravel Anda
+                const response = await Get<{ success: boolean, data: any }>(`front-office/dashboard?start_date=${startDate}&end_date=${endDate}`);
+
+                // Berdasarkan function Laravel (apiService->successWithData), 
+                // datanya kemungkinan bersarang di response.data
+                if (response && response.data) {
+                    setStats(response.data.stats);
+                    setChartData(response.data.chartData);
+                    setRecentMembers(response?.data?.recent_members)
+                }
             }
         } catch (e: any) {
             // console.error("Gagal memuat data dashboard", e);
@@ -101,7 +122,7 @@ const useDashboardData = () => {
         isLoading, isDateModalOpen, setIsDateModalOpen,
         startDate, setStartDate, endDate, setEndDate, activeFilterLabel,
         stats, chartData,
-        applyQuickFilter, applyYearFilter, applyCustomFilter
+        applyQuickFilter, applyYearFilter, applyCustomFilter, recentMembers
     };
 };
 

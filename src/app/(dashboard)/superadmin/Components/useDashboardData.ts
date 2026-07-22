@@ -8,8 +8,6 @@ type Props = {}
 interface StatsType {
     total_member: number;
     total_fo: number;
-    total_simpanan: number;
-    total_pembiayaan: number;
 }
 
 interface MemberChartType {
@@ -53,7 +51,7 @@ const useDashboardData = () => {
                 setChartData(response.data.chartData);
             }
         } catch (e: any) {
-            console.error("Gagal memuat data dashboard", e);
+            // console.error("Gagal memuat data dashboard", e);
         } finally {
             setIsLoading(false);
         }

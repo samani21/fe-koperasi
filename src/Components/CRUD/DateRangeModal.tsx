@@ -203,7 +203,7 @@ const DateRangeModal: React.FC<{
     return (
         // 3. UX: Menambahkan onClick pada backdrop agar bisa ditutup saat diklik di luar area putih
         <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+            className="fixed inset-0 bg-slate-900/40 h-full backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
             onClick={onClose}
         >
             {/* 3. UX: stopPropagation mencegah klik di area putih kalender ikut menutup modal */}

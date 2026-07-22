@@ -46,6 +46,30 @@ const SkeletonCell = () => (
     </div>
 );
 
+// Helper untuk Smart Pagination dengan Ellipsis (...)
+const getPaginationItems = (currentPage: number, totalPages: number) => {
+    // SOP 4: Edge case jika tidak ada halaman
+    if (totalPages <= 0) return [];
+
+    // Jika total halaman 7 atau kurang, tampilkan semua (misal: 1 2 3 4 5 6 7)
+    if (totalPages <= 7) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    // Jika posisi user ada di awal halaman (misal: 1 2 3 4 5 ... 100)
+    if (currentPage <= 4) {
+        return [1, 2, 3, 4, 5, '...', totalPages];
+    }
+
+    // Jika posisi user ada di akhir halaman (misal: 1 ... 96 97 98 99 100)
+    if (currentPage >= totalPages - 3) {
+        return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+
+    // Jika posisi user ada di tengah halaman (misal: 1 ... 49 50 51 ... 100)
+    return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+};
+
 // ==========================================
 // MAIN COMPONENT
 // ==========================================
@@ -67,6 +91,9 @@ export default function DataTable<T>({
     const totalPages = isPaginated ? Math.ceil((total ?? 0) / itemsPerPage) : 1;
     const from = (page - 1) * itemsPerPage + 1;
     const to = isPaginated ? Math.min(page * itemsPerPage, total!) : data.length;
+
+    // Generate list angka pagination
+    const paginationItems = getPaginationItems(page, totalPages);
 
     return (
         <div className="bg-transparent md:bg-white md:rounded-3xl md:border border-slate-100 md:shadow-sm md:shadow-green-600/5 animate-in fade-in duration-300">
@@ -152,7 +179,7 @@ export default function DataTable<T>({
                 </table>
             </div>
 
-            {/* Footer / Pagination (Menempel di bawah pada Mobile & Desktop) */}
+            {/* Footer / Pagination */}
             <div className="bg-white rounded-2xl md:rounded-none md:rounded-b-3xl px-4 py-4 md:px-6 md:py-5 border border-slate-100 md:border-t md:border-x-0 md:border-b-0 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm md:shadow-none">
 
                 {/* Total Indicator */}
@@ -173,17 +200,24 @@ export default function DataTable<T>({
                     </button>
 
                     <div className="flex items-center gap-1 flex-wrap justify-center">
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => onPageChange?.(Math.min(totalPages, i + 1))}
-                                className={`w-8 h-8 md:w-9 md:h-9 rounded-xl text-xs md:text-sm font-bold transition-all active:scale-95 flex items-center justify-center ${page === i + 1
-                                    ? 'bg-green-600 text-white shadow-md shadow-green-600/25 border border-green-600'
-                                    : 'border border-transparent bg-transparent hover:bg-slate-100 text-slate-600'
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
+                        {paginationItems.map((item, i) => (
+                            <React.Fragment key={i}>
+                                {item === '...' ? (
+                                    <span className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center text-slate-400 font-medium">
+                                        ...
+                                    </span>
+                                ) : (
+                                    <button
+                                        onClick={() => onPageChange?.(item as number)}
+                                        className={`w-8 h-8 md:w-9 md:h-9 rounded-xl text-xs md:text-sm font-bold transition-all active:scale-95 flex items-center justify-center ${page === item
+                                            ? 'bg-green-600 text-white shadow-md shadow-green-600/25 border border-green-600'
+                                            : 'border border-transparent bg-transparent hover:bg-slate-100 text-slate-600'
+                                            }`}
+                                    >
+                                        {item}
+                                    </button>
+                                )}
+                            </React.Fragment>
                         ))}
                     </div>
 

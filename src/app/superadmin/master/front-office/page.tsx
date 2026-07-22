@@ -35,10 +35,6 @@ export default function FrontOfficePage({ }: Props) {
     const [dataUpdate, setDataUpdate] = useState<FrontOfficeType | null>(null);
     const [deleteData, setDeleteData] = useState<FrontOfficeType | null>(null);
 
-    // ==========================================
-    // EFFECTS & HELPERS
-    // ==========================================
-
     // 1. Auto-hide Alert dengan Cleanup Timer
     useEffect(() => {
         if (showAlert?.isOpen) {
@@ -49,7 +45,7 @@ export default function FrontOfficePage({ }: Props) {
         }
     }, [showAlert]);
 
-    // 2. Debounce Search (SOP 3: Optimasi Performa)
+    // 2. Debounce Search 
     useEffect(() => {
         const handler = setTimeout(() => setDebouncedSearch(search), 800);
         return () => clearTimeout(handler);
@@ -71,9 +67,7 @@ export default function FrontOfficePage({ }: Props) {
         return `?${params.toString()}`;
     }, [page, debouncedSearch, itemsPerPage]);
 
-    // ==========================================
-    // API ACTIONS
-    // ==========================================
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError('');
@@ -126,9 +120,7 @@ export default function FrontOfficePage({ }: Props) {
         }
     };
 
-    // ==========================================
-    // UI HANDLERS
-    // ==========================================
+
     const handleResetFilter = () => {
         setSearch("");
     };
@@ -173,7 +165,7 @@ export default function FrontOfficePage({ }: Props) {
 
     return (
         <MainLayout>
-            <div className='relative space-y-6'>
+            <div className='relative space-y-6 pb-6'>
                 {/* Judul Halaman */}
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Kelola Akun Front Office</h1>
